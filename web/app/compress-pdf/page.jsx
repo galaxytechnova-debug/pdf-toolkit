@@ -5,6 +5,7 @@ import { postMultipart, downloadBlob } from "@/lib/api";
 const UploadArea = dynamic(() => import("@/components/UploadArea"), { ssr: false });
 
 import { Archive, Zap, BarChart3, Feather } from "lucide-react";
+import FileSizeHint from "@/components/FileSizeHint";
 
 export default function CompressPdfPage() {
   const [busy, setBusy] = useState(false);
@@ -25,8 +26,7 @@ export default function CompressPdfPage() {
     if (!file) return;
     setBusy(true);
     try {
-      // Future update: pass 'compressionLevel' to server
-      const blob = await postMultipart("compress-pdf", { file });
+      const blob = await postMultipart("compress-pdf", { file }, { level: compressionLevel });
       downloadBlob(blob, "compressed.pdf");
       setFile(null);
     } catch (e) {
@@ -63,6 +63,9 @@ export default function CompressPdfPage() {
                 <p className="text-xs text-zinc-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
               <button onClick={() => setFile(null)} className="text-sm font-medium text-zinc-400 hover:text-zinc-600 underline decoration-zinc-300 underline-offset-4">Change File</button>
+            </div>
+            <div className="px-6 pb-2">
+              <FileSizeHint file={file} tool="compress" />
             </div>
 
             <div className="p-6">

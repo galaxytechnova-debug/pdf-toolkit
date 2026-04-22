@@ -11,6 +11,7 @@ router.post('/', async (req, res) => {
       if (err) return res.status(400).json({ error: 'Upload error' });
       if (!req.file) return res.status(400).json({ error: 'Provide a PDF file in field "file"' });
 
+      const level = (req.body && req.body.level) || 'recommended';
       const src = await PDFDocument.load(req.file.buffer);
       // Remove metadata that can bloat size
       src.setTitle('');
@@ -18,7 +19,17 @@ router.post('/', async (req, res) => {
       src.setSubject('');
       src.setProducer('');
       src.setCreator('');
-      const bytes = await src.save({ useObjectStreams: true });
+
+      let bytes;
+      if (level === 'extreme') {
+        const fresh = await PDFDocument.create();
+        const idx = src.getPageIndices();
+        const pages = await fresh.copyPages(src, idx);
+        pages.forEach((p) => fresh.addPage(p));
+        bytes = await fresh.save({ useObjectStreams: true });
+      } else {
+        bytes = await src.save({ useObjectStreams: true });
+      }
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="compressed.pdf"');

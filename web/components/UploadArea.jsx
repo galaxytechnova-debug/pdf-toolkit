@@ -25,6 +25,10 @@ function UploadAreaBase({ multiple = false, onFiles, icon: Icon, title, descript
     fuchsia: { border: "border-fuchsia-500", bg: "bg-fuchsia-50/50", ring: "ring-fuchsia-100", text: "text-fuchsia-600", from: "from-fuchsia-50", to: "to-pink-50", hoverBorder: "hover:border-fuchsia-400" },
     lime: { border: "border-lime-500", bg: "bg-lime-50/50", ring: "ring-lime-100", text: "text-lime-600", from: "from-lime-50", to: "to-green-50", hoverBorder: "hover:border-lime-400" },
     cyan: { border: "border-cyan-500", bg: "bg-cyan-50/50", ring: "ring-cyan-100", text: "text-cyan-600", from: "from-cyan-50", to: "to-blue-50", hoverBorder: "hover:border-cyan-400" },
+    slate: { border: "border-slate-500", bg: "bg-slate-50/50", ring: "ring-slate-100", text: "text-slate-600", from: "from-slate-50", to: "to-zinc-50", hoverBorder: "hover:border-slate-400" },
+    zinc: { border: "border-zinc-500", bg: "bg-zinc-50/50", ring: "ring-zinc-100", text: "text-zinc-600", from: "from-zinc-50", to: "to-neutral-50", hoverBorder: "hover:border-zinc-400" },
+    green: { border: "border-green-500", bg: "bg-green-50/50", ring: "ring-green-100", text: "text-green-700", from: "from-green-50", to: "to-emerald-50", hoverBorder: "hover:border-green-400" },
+    amber: { border: "border-amber-500", bg: "bg-amber-50/50", ring: "ring-amber-100", text: "text-amber-800", from: "from-amber-50", to: "to-yellow-50", hoverBorder: "hover:border-amber-400" },
   };
 
   const theme = colorClasses[color] || colorClasses.indigo;

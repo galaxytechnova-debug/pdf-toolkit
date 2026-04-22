@@ -10,6 +10,14 @@ import {
   Presentation,
   FileSpreadsheet,
   ArrowRight,
+  Printer,
+  PenLine,
+  Hash,
+  LockKeyholeOpen,
+  LockKeyhole,
+  Layers,
+  Droplets,
+  Maximize2,
 } from "lucide-react";
 
 const tools = [
@@ -25,6 +33,18 @@ const tools = [
   { href: "/excel-to-pdf", label: "Excel to PDF", Icon: FileSpreadsheet, desc: "Save spreadsheets as PDFs.", bg: "bg-lime-50", fg: "text-lime-600" },
   { href: "/pdf-to-excel", label: "PDF to Excel", Icon: FileSpreadsheet, desc: "Extract tables into XLSX.", bg: "bg-lime-50", fg: "text-lime-600" },
   { href: "/compress-image", label: "Compress Image", Icon: ImageIcon, desc: "Shrink PNG/JPG files smartly.", bg: "bg-cyan-50", fg: "text-cyan-600" },
+];
+
+const cafeTools = [
+  { href: "/pdf-print-preview", label: "Print preview", Icon: Printer, desc: "Pick pages before printing — saves paper.", bg: "bg-slate-50", fg: "text-slate-700" },
+  { href: "/fill-pdf", label: "Type on PDF", Icon: PenLine, desc: "Add text for forms without Acrobat.", bg: "bg-sky-50", fg: "text-sky-700" },
+  { href: "/add-page-numbers", label: "Page numbers", Icon: Hash, desc: "Number pages for submissions.", bg: "bg-zinc-50", fg: "text-zinc-700" },
+  { href: "/jpg-to-pdf", label: "Images to PDF", Icon: ImageIcon, desc: "Scans and phone photos to one PDF.", bg: "bg-yellow-50", fg: "text-yellow-700" },
+  { href: "/unlock-pdf", label: "Unlock PDF", Icon: LockKeyholeOpen, desc: "Remove open password for printing.", bg: "bg-green-50", fg: "text-green-700" },
+  { href: "/lock-pdf", label: "Lock PDF", Icon: LockKeyhole, desc: "Add an open password before sharing.", bg: "bg-amber-50", fg: "text-amber-800" },
+  { href: "/organize-pdf", label: "Organize pages", Icon: Layers, desc: "Reorder, rotate, delete pages.", bg: "bg-orange-50", fg: "text-orange-800" },
+  { href: "/watermark-pdf", label: "Watermark", Icon: Droplets, desc: "Draft / confidential stamp.", bg: "bg-cyan-50", fg: "text-cyan-800" },
+  { href: "/resize-pdf", label: "Resize pages", Icon: Maximize2, desc: "A4, Letter, Legal fit or stretch.", bg: "bg-violet-50", fg: "text-violet-800" },
 ];
 
 export default function Home() {
@@ -77,6 +97,28 @@ export default function Home() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-16 sm:mt-24">
+        <h2 className="text-center text-2xl font-bold text-zinc-900 mb-2">Internet cafe essentials</h2>
+        <p className="text-center text-zinc-500 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
+          Walk-in friendly tools: print-ready preview, forms, page numbers, scans to PDF, lock/unlock, and more. Pin your favourites from any tool page.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {cafeTools.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              className="group rounded-2xl border border-indigo-200/60 bg-white/80 p-5 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all"
+            >
+              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${t.bg} mb-3`}>
+                <t.Icon className={`h-5 w-5 ${t.fg}`} aria-hidden />
+              </div>
+              <h3 className="font-semibold text-zinc-900 group-hover:text-indigo-800">{t.label}</h3>
+              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{t.desc}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,5 +1,9 @@
-export async function postMultipart(endpoint, filesMap) {
+export async function postMultipart(endpoint, filesMap, extraFields = {}) {
   const form = new FormData();
+  for (const [k, v] of Object.entries(extraFields)) {
+    if (v === undefined || v === null) continue;
+    form.append(k, typeof v === 'string' || v instanceof Blob ? v : JSON.stringify(v));
+  }
   for (const [field, files] of Object.entries(filesMap)) {
     if (Array.isArray(files)) {
       files.forEach((f) => form.append(field, f));
