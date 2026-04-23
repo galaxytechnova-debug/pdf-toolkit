@@ -1,139 +1,89 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { X, GripVertical } from "lucide-react";
-import { useI18n } from "@/components/I18nProvider";
+import { 
+  Files, SplitSquareVertical, Archive, Pencil, Image as ImageIcon, 
+  Globe, FileText, Presentation, FileSpreadsheet, Hash, RotateCw, Droplet, Maximize, Lock, Unlock, PinOff, Pin,
+  Target, Images, AlignVerticalSpaceAround, PenTool, Type, EyeOff, FileSearch, Scissors
+} from "lucide-react";
 
-const STORAGE_KEY = "pdf-toolkit-pinned-tools";
-const MAX = 4;
-
-export function readPinned() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.filter((x) => x && x.href && x.label).slice(0, MAX) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function writePinned(items) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, MAX)));
-  } catch {}
-}
-
-export function pinTool(item) {
-  const cur = readPinned();
-  if (cur.some((x) => x.href === item.href)) return cur;
-  const next = [...cur, { href: item.href, label: item.label }].slice(-MAX);
-  writePinned(next);
-  return next;
-}
-
-export function unpinTool(href) {
-  const next = readPinned().filter((x) => x.href !== href);
-  writePinned(next);
-  return next;
-}
+// Map slugs to icons
+const iconMap = {
+  "/merge-pdf": Files, "/split-pdf": SplitSquareVertical, "/compress-pdf": Archive,
+  "/compress-to-size": Target, "/extract-pages": Scissors,
+  "/edit-pdf": Pencil, "/organize-pdf": Hash,
+  "/add-header-footer": AlignVerticalSpaceAround,
+  "/watermark-pdf": Droplet, "/resize-pdf": Maximize, "/rotate-pdf": RotateCw,
+  "/lock-pdf": Lock, "/unlock-pdf": Unlock,
+  "/sign-pdf": PenTool, "/redact-pdf": EyeOff,
+  "/file-size-checker": FileSearch, "/images-to-pdf": Images,
+  "/jpg-to-pdf": ImageIcon, "/word-to-pdf": FileText,
+  "/ppt-to-pdf": Presentation, "/excel-to-pdf": FileSpreadsheet, "/html-to-pdf": Globe,
+  "/pdf-to-jpg": ImageIcon, "/pdf-to-word": FileText, "/pdf-to-ppt": Presentation,
+  "/pdf-to-excel": FileSpreadsheet, "/compress-image": ImageIcon, "/pdf-to-image": ImageIcon
+};
 
 export default function PinnedToolsBar() {
-  const { t } = useI18n();
-  const [items, setItems] = useState([]);
+  const [pinned, setPinned] = useState([]);
 
   useEffect(() => {
-    queueMicrotask(() => setItems(readPinned()));
-    function onStorage(e) {
-      if (!e || e.key === STORAGE_KEY || e.key === null) queueMicrotask(() => setItems(readPinned()));
-    }
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("pdf-pinned-changed", onStorage);
+    // Load pinned from localStorage
+    const loadPinned = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("pinnedTools") || "[]");
+        setPinned(stored);
+      } catch (e) {
+        setPinned([]);
+      }
+    };
+    
+    loadPinned();
+    
+    // Listen for changes from other tabs or same page
+    window.addEventListener("storage", loadPinned);
+    window.addEventListener("pinnedToolsUpdate", loadPinned);
+    
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("pdf-pinned-changed", onStorage);
+      window.removeEventListener("storage", loadPinned);
+      window.removeEventListener("pinnedToolsUpdate", loadPinned);
     };
   }, []);
 
-  if (!items.length) return null;
+  const unpin = (href) => {
+    const newPinned = pinned.filter(t => t.href !== href);
+    setPinned(newPinned);
+    localStorage.setItem("pinnedTools", JSON.stringify(newPinned));
+    window.dispatchEvent(new Event("pinnedToolsUpdate"));
+  };
+
+  if (!pinned || pinned.length === 0) return null;
 
   return (
-    <div className="border-b border-indigo-100/80 bg-indigo-50/40 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-2 text-sm">
-        <span className="inline-flex items-center gap-1 text-indigo-800/80 font-medium shrink-0">
-          <GripVertical className="h-4 w-4 opacity-60" aria-hidden />
-          {t("pinBar")}
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {items.map((it, idx) => (
-            <span
-              key={it.href}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.effectAllowed = "move";
-                e.dataTransfer.setData("application/x-pin-index", String(idx));
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                const from = Number(e.dataTransfer.getData("application/x-pin-index"));
-                if (Number.isNaN(from) || from === idx) return;
-                const cur = readPinned();
-                const next = [...cur];
-                const [moved] = next.splice(from, 1);
-                next.splice(idx, 0, moved);
-                writePinned(next);
-                setItems(readPinned());
-              }}
-              className="inline-flex items-center gap-1 rounded-full bg-white/90 border border-indigo-200/60 px-2.5 py-1 shadow-sm cursor-grab active:cursor-grabbing"
-            >
-              <GripVertical className="h-3.5 w-3.5 text-zinc-400 shrink-0" aria-hidden />
-              <Link href={it.href} className="text-indigo-800 hover:text-indigo-950 font-medium" onClick={(e) => e.stopPropagation()}>
-                {it.label}
+    <div className="bg-zinc-900 text-zinc-300 py-1.5 px-4 sm:px-6 lg:px-8 flex items-center gap-4 overflow-x-auto scrollbar-none text-xs font-medium z-50">
+      <span className="flex items-center gap-1.5 shrink-0 text-zinc-400">
+        <Pin className="h-3 w-3" /> Pinned
+      </span>
+      <div className="w-px h-4 bg-zinc-700 shrink-0" />
+      <div className="flex items-center gap-2">
+        {pinned.map(t => {
+          const Icon = iconMap[t.href] || FileText;
+          return (
+            <div key={t.href} className="group relative flex items-center bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors shrink-0">
+              <Link href={t.href} className="flex items-center gap-1.5 px-3 py-1 text-zinc-100">
+                <Icon className="h-3.5 w-3.5 text-zinc-400 group-hover:text-white" />
+                {t.label}
               </Link>
-              <button
-                type="button"
-                className="p-0.5 rounded-full text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
-                aria-label={t("unpin")}
-                onClick={() => {
-                  unpinTool(it.href);
-                  setItems(readPinned());
-                }}
+              <button 
+                onClick={() => unpin(t.href)}
+                className="pr-2 pl-1 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all focus:outline-none"
+                title="Unpin"
               >
-                <X className="h-3.5 w-3.5" />
+                <PinOff className="h-3 w-3" />
               </button>
-            </span>
-          ))}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  );
-}
-
-export function PinCurrentToolButton({ href, label }) {
-  const { t } = useI18n();
-  const [rev, setRev] = useState(0);
-  useEffect(() => {
-    function bump() {
-      setRev((x) => x + 1);
-    }
-    window.addEventListener("pdf-pinned-changed", bump);
-    return () => window.removeEventListener("pdf-pinned-changed", bump);
-  }, []);
-  void rev;
-  const pinned = readPinned().some((x) => x.href === href);
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        if (pinned) unpinTool(href);
-        else pinTool({ href, label });
-        window.dispatchEvent(new Event("pdf-pinned-changed"));
-        setRev((x) => x + 1);
-      }}
-      className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline-offset-4 hover:underline"
-    >
-      {pinned ? t("unpin") : t("pinThis")}
-    </button>
   );
 }
