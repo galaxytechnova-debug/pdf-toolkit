@@ -5,13 +5,30 @@ import { postMultipart, downloadBlob } from "@/lib/api";
 const UploadArea = dynamic(() => import("@/components/UploadArea"), { ssr: false });
 
 import { Archive, Zap, BarChart3, Feather } from "lucide-react";
-import FileSizeHint from "@/components/FileSizeHint";
 
 export default function CompressPdfPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
   const [compressionLevel, setCompressionLevel] = useState("recommended");
+  
+  // Calculate estimated sizes
+  const getEstimatedSize = (level) => {
+    if (!file) return 0;
+    const size = file.size;
+    if (level === "extreme") return size * 0.3;
+    if (level === "recommended") return size * 0.6;
+    if (level === "low") return size * 0.85;
+    return size;
+  };
+
+  const formatSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   function onFiles(files) {
     setError("");
@@ -26,7 +43,8 @@ export default function CompressPdfPage() {
     if (!file) return;
     setBusy(true);
     try {
-      const blob = await postMultipart("compress-pdf", { file }, { level: compressionLevel });
+      // Future update: pass 'compressionLevel' to server
+      const blob = await postMultipart("compress-pdf", { file });
       downloadBlob(blob, "compressed.pdf");
       setFile(null);
     } catch (e) {
@@ -60,12 +78,13 @@ export default function CompressPdfPage() {
               </div>
               <div className="flex-1">
                 <p className="font-medium text-zinc-900">{file.name}</p>
-                <p className="text-xs text-zinc-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <span>Original: {formatSize(file.size)}</span>
+                    <span>→</span>
+                    <span className="font-medium text-emerald-600">Est. Size: {formatSize(getEstimatedSize(compressionLevel))}</span>
+                </div>
               </div>
               <button onClick={() => setFile(null)} className="text-sm font-medium text-zinc-400 hover:text-zinc-600 underline decoration-zinc-300 underline-offset-4">Change File</button>
-            </div>
-            <div className="px-6 pb-2">
-              <FileSizeHint file={file} tool="compress" />
             </div>
 
             <div className="p-6">
@@ -83,7 +102,10 @@ export default function CompressPdfPage() {
                   >
                     <opt.icon className={`h-6 w-6 mb-3 ${compressionLevel === opt.id ? "text-emerald-600" : "text-zinc-400"}`} />
                     <div className="font-medium text-sm text-zinc-900 mb-1">{opt.label}</div>
-                    <div className="text-[11px] text-zinc-500 leading-tight">{opt.desc}</div>
+                    <div className="text-[11px] text-zinc-500 leading-tight mb-2">{opt.desc}</div>
+                    <div className={`mt-auto text-xs font-semibold px-2 py-1 rounded-md ${compressionLevel === opt.id ? "bg-emerald-100 text-emerald-700" : "bg-zinc-100 text-zinc-600"}`}>
+                        ~ {formatSize(getEstimatedSize(opt.id))}
+                    </div>
                   </button>
                 ))}
               </div>

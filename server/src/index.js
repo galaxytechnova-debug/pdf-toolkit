@@ -30,13 +30,6 @@ app.use('/api/pdf-to-word', require('./routes/pdf-to-word'));
 app.use('/api/excel-to-pdf', require('./routes/excel-to-pdf'));
 app.use('/api/pdf-to-excel', require('./routes/pdf-to-excel'));
 app.use('/api/ppt-to-pdf', require('./routes/ppt-to-pdf'));
-app.use('/api/jpg-to-pdf', require('./routes/jpg-to-pdf'));
-app.use('/api/page-numbers-pdf', require('./routes/page-numbers-pdf'));
-app.use('/api/unlock-pdf', require('./routes/unlock-pdf'));
-app.use('/api/lock-pdf', require('./routes/lock-pdf'));
-app.use('/api/reorder-pdf', require('./routes/reorder-pdf'));
-app.use('/api/watermark-pdf', require('./routes/watermark-pdf'));
-app.use('/api/resize-pdf', require('./routes/resize-pdf'));
 
 // Stubs or externally powered tools
 app.use('/api/pdf-to-image', require('./routes/stub-generic')('pdf-to-image'));
